@@ -408,6 +408,8 @@
       await Word.run(async (ctx) => {
         const st = ctx.document.addStyle(STYLE_NAME, Word.StyleType.character);
         st.font.name = FONT_NAME;
+        st.font.bold = false;     // الرموز دائماً عادية (بلا بولد)
+        st.font.italic = false;   // وبلا مائل
         await ctx.sync();
       });
     } catch (e) {
@@ -440,7 +442,7 @@
       await Word.run(async (ctx) => {
         const scope = onSel ? ctx.document.getSelection() : ctx.document.body;
         const paras = scope.paragraphs;
-        paras.load("text");
+        paras.load("text, font/name, font/size, font/bold, font/italic, font/underline, font/color");
         await ctx.sync();
 
         for (const para of paras.items){
@@ -451,12 +453,32 @@
           const segs = segment(transformed);
           if (!segs.some(s => s.symbol)) continue;
 
+          // التقاط خط الفقرة الأصلي لإعادة تطبيقه على النص العادي،
+          // حتى لا يَرِث ما بعد الرمز خطَّ الرمز (حروف الأنوار)
+          const pf = para.font;
+          const base = {};
+          if (pf.name !== null)      base.name = pf.name;
+          if (pf.size !== null)      base.size = pf.size;
+          if (pf.bold !== null)      base.bold = pf.bold;
+          if (pf.italic !== null)    base.italic = pf.italic;
+          if (pf.underline !== null) base.underline = pf.underline;
+          if (pf.color !== null)     base.color = pf.color;
+
           let first = true;
           for (const s of segs){
             let ins;
             if (first){ ins = para.getRange().insertText(s.text, Word.InsertLocation.replace); first = false; }
             else      { ins = para.insertText(s.text, Word.InsertLocation.end); }
-            if (s.symbol) ins.style = STYLE_NAME;
+
+            if (s.symbol){
+              // الرمز: نمط حروف الأنوار، وعادي دائماً (نزع البولد والمائل)
+              ins.style = STYLE_NAME;
+              ins.font.bold = false;
+              ins.font.italic = false;
+            } else {
+              // النص العادي: يحتفظ بخط الفقرة الأصلي كما هو دون تغيير
+              if (Object.keys(base).length) ins.font.set(base);
+            }
           }
           changed++;
         }
@@ -484,13 +506,25 @@
           results.load("items");
           await ctx.sync();
 
-          const fonts = results.items.map(r => { r.font.load("name"); return r; });
+          // حمّل خط كل نتيجة، وخط فقرتها لإعادة التنسيق الأصلي
+          const items = results.items.map(r => {
+            r.font.load("name");
+            const p = r.paragraphs.getFirst();
+            p.font.load("bold, italic");
+            return { r, p };
+          });
           await ctx.sync();
 
-          for (const r of fonts){
-            if (r.font.name === FONT_NAME){
-              const ins = r.insertText(entry.phrase, Word.InsertLocation.replace);
-              ins.style = "Default Paragraph Font"; // إزالة النمط الحرفي
+          // المعالجة من الأخير إلى الأول: استبدال رمزٍ لا يُزيح مواقع
+          // الرموز التي قبله، فتبقى مراجعها صالحة حتى نهاية المستند
+          for (let i = items.length - 1; i >= 0; i--){
+            const it = items[i];
+            if (it.r.font.name === FONT_NAME){
+              const ins = it.r.insertText(entry.phrase, Word.InsertLocation.replace);
+              ins.style = "Default Paragraph Font"; // إزالة النمط الحرفي (يعيد الخط)
+              // إعادة بولد/مائل الفقرة للنص المُسترجَع (في الفقرات المتجانسة)
+              if (it.p.font.bold !== null)   ins.font.bold = it.p.font.bold;
+              if (it.p.font.italic !== null) ins.font.italic = it.p.font.italic;
               restored++;
             }
           }
