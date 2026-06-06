@@ -148,6 +148,7 @@
       text-align: center; margin-top: 20px;
       font-size: 11.5px; color: var(--ink-soft);
     }
+    footer .update { margin-top: 3px; font-size: 10.5px; opacity: .8; }
     .spinner {
       display: inline-block; width: 13px; height: 13px;
       border: 2px solid var(--line); border-top-color: var(--gold);
@@ -176,17 +177,6 @@
     </div>
 
     <div class="card">
-      <div class="label"><span class="dot"></span> المسافة السابقة للرمز</div>
-      <select id="space">
-        <option value="none">بدون تغيير</option>
-        <option value="nbsp">غير منقسمة</option>
-        <option value="narrow">غير منقسمة ضيقة</option>
-        <option value="thin">غير منقسمة رفيعة</option>
-      </select>
-      <div class="hint">تُلصق العبارة بالكلمة التي قبلها لمنع انفصالها على رأس السطر.</div>
-    </div>
-
-    <div class="card">
       <div class="label"><span class="dot"></span> النمط المطبَّق</div>
       <div class="info-row"><span>النمط الحرفي</span><span>حروف الأنوار</span></div>
       <div class="info-row"><span>الخط</span><span>AlAnwarLetters</span></div>
@@ -199,7 +189,10 @@
 
     <div id="status"></div>
 
-    <footer>تطوير حيدر المعاتيق © 2026</footer>
+    <footer>
+      <div>تطوير حيدر المعاتيق © 2026</div>
+      <div class="update">آخر تحديث: 6 يونيو 2026</div>
+    </footer>
   </div>
 
   <script>
@@ -223,7 +216,6 @@
 
   /* ---------- قائمة الاستبدال (الأطول أولاً) ---------- */
   const REPLACEMENTS = [
-    { find: "حقوق الطبع محفوظة",        replace: "F" },
     { find: "صلى الله عليه وآله وسلم",   replace: "M" },
     { find: "صلى الله عليه وآله",        replace: "M" },
     { find: "صلوات الله عليه",           replace: "L" },
@@ -284,7 +276,6 @@
 
   /* ---------- خريطة العكس (رمز → عبارة افتراضية) ---------- */
   const REVERSE_MAP = [
-    { symbol: "F", phrase: "حقوق الطبع محفوظة" },
     { symbol: "M", phrase: "صلى الله عليه وآله وسلم" },
     { symbol: "L", phrase: "صلوات الله عليه" },
     { symbol: "h", phrase: "عليهم صلوات الله" },
@@ -360,46 +351,55 @@
 
   function buildOr(list){ return list.map(buildSinglePattern).join("|"); }
 
-  /* ---------- التحويل النصي (يطابق مراحل السكربت الثلاث) ---------- */
-  function transform(text, spaceChar){
-    // المرحلة 1: الحماية السياقية — إدراج حارس يكسر العبارة
+  /* ---------- حساب مواضع الاستبدال (استبدال في الموضع) ----------
+     يُرجِع قائمة مواضع غير متداخلة {start, end, matchText, symbol}
+     مرتّبة تصاعدياً، مع مراعاة الحماية السياقية و«الأطول أولاً».
+     الفكرة: لا نعيد بناء الفقرة، بل نستبدل الرمز في موضعه فقط،
+     فيبقى باقي النص (بما فيه البولد) بتنسيقه الأصلي دون أي لمس. */
+  function computeSpans(text){
+    // المناطق المحميّة (لا يُستبدل ما يقع داخلها)
+    const protectedZones = [];
     for (const rule of PROTECTION_RULES){
       const pat = WORD_START
                 + "(" + buildOr(rule.prefix) + ")"
                 + "(\\s+(?:" + buildOr(rule.middle) + "))"
                 + "(\\s+(?:" + buildOr(rule.suffix) + "))";
-      text = text.replace(new RegExp(pat, "g"), "$1$2" + GUARD + "$3");
-    }
-
-    // المرحلة 2: الاستبدال (الأطول أولاً) + توحيد المسافة السابقة
-    for (const p of REPLACEMENTS){
-      const core = "(?<!\\w)" + buildArabicGrep(p.find) + "(?!\\w)";
-      const pat  = MARKS + core + MARKS;
-      text = text.replace(new RegExp(pat, "g"), SENT_OPEN + p.replace + SENT_CLOSE);
-
-      if (spaceChar){
-        const reSp = new RegExp("[ \\u00A0\\u202F\\u2009]+(?=" + SENT_OPEN + p.replace + SENT_CLOSE + ")", "g");
-        text = text.replace(reSp, spaceChar);
+      const re = new RegExp(pat, "g");
+      let m;
+      while ((m = re.exec(text)) !== null){
+        protectedZones.push([m.index, re.lastIndex]);
+        if (re.lastIndex === m.index) re.lastIndex++;
       }
     }
-
-    // المرحلة 3: إزالة الحراس
-    text = text.split(GUARD).join("");
-    return text;
-  }
-
-  /* ---------- تقطيع الناتج إلى مقاطع (نص عادي / رمز) ---------- */
-  function segment(text){
-    const segs = [];
-    const re = new RegExp(SENT_OPEN + "([\\s\\S]*?)" + SENT_CLOSE, "g");
-    let last = 0, m;
-    while ((m = re.exec(text)) !== null){
-      if (m.index > last) segs.push({ text: text.slice(last, m.index), symbol: false });
-      segs.push({ text: m[1], symbol: true });
-      last = re.lastIndex;
+    function inProtected(s, e){
+      for (const z of protectedZones){ if (s < z[1] && e > z[0]) return true; }
+      return false;
     }
-    if (last < text.length) segs.push({ text: text.slice(last), symbol: false });
-    return segs;
+
+    const claimed = [];
+    const spans = [];
+    function overlapsClaimed(s, e){
+      for (const c of claimed){ if (s < c[1] && e > c[0]) return true; }
+      return false;
+    }
+
+    // الأطول أولاً (REPLACEMENTS مرتّبة كذلك)
+    for (const p of REPLACEMENTS){
+      const core = "(?<!\\w)" + buildArabicGrep(p.find) + "(?!\\w)";
+      const re = new RegExp(MARKS + core + MARKS, "g");
+      let m;
+      while ((m = re.exec(text)) !== null){
+        const s = m.index, e = m.index + m[0].length;
+        if (e <= s){ re.lastIndex++; continue; }
+        if (!overlapsClaimed(s, e) && !inProtected(s, e)){
+          claimed.push([s, e]);
+          spans.push({ start: s, end: e, matchText: m[0], symbol: p.replace });
+        }
+        if (re.lastIndex === m.index) re.lastIndex++;
+      }
+    }
+    spans.sort((a, b) => a.start - b.start);
+    return spans;
   }
 
   /* ---------- إنشاء النمط الحرفي (مرة واحدة) ---------- */
@@ -417,21 +417,12 @@
     }
   }
 
-  function getSpaceChar(){
-    switch (document.getElementById("space").value){
-      case "nbsp":   return "\u00A0";
-      case "narrow": return "\u202F";
-      case "thin":   return "\u2009";
-      default:       return null;
-    }
-  }
   function useSelection(){
     return document.querySelector('input[name="scope"]:checked').value === "selection";
   }
 
-  /* ---------- زر التنفيذ ---------- */
+  /* ---------- زر التنفيذ (استبدال في الموضع) ---------- */
   async function runForward(){
-    const spaceChar = getSpaceChar();
     const onSel = useSelection();
     setStatus("work", "جارٍ التنفيذ");
 
@@ -442,50 +433,70 @@
       await Word.run(async (ctx) => {
         const scope = onSel ? ctx.document.getSelection() : ctx.document.body;
         const paras = scope.paragraphs;
-        paras.load("text, font/name, font/size, font/bold, font/italic, font/underline, font/color");
+        paras.load("items");
+        await ctx.sync();
+        paras.items.forEach(p => p.load("text"));
         await ctx.sync();
 
+        // المرحلة 1: لكل فقرة، احسب المواضع وابحث عن نصوصها (قبل أي تعديل)
+        const plan = [];
         for (const para of paras.items){
           const orig = para.text;
-          if (!orig) continue;
+          if (!orig){ plan.push(null); continue; }
+          const spans = computeSpans(orig);
+          if (!spans.length){ plan.push(null); continue; }
 
-          const transformed = transform(orig, spaceChar);
-          const segs = segment(transformed);
-          if (!segs.some(s => s.symbol)) continue;
+          // اجمع المواضع حسب النص المطابَق، وابحث عن كل نص مميّز داخل الفقرة
+          const byText = {};
+          for (const sp of spans){
+            (byText[sp.matchText] = byText[sp.matchText] || []).push(sp);
+          }
+          const searches = {};
+          const pr = para.getRange();
+          for (const mt of Object.keys(byText)){
+            const res = pr.search(mt, { matchCase: true });
+            res.load("items");
+            searches[mt] = res;
+          }
+          plan.push({ orig, byText, searches });
+        }
+        await ctx.sync();
 
-          // التقاط خط الفقرة الأصلي لإعادة تطبيقه على النص العادي،
-          // حتى لا يَرِث ما بعد الرمز خطَّ الرمز (حروف الأنوار)
-          const pf = para.font;
-          const base = {};
-          if (pf.name !== null)      base.name = pf.name;
-          if (pf.size !== null)      base.size = pf.size;
-          if (pf.bold !== null)      base.bold = pf.bold;
-          if (pf.italic !== null)    base.italic = pf.italic;
-          if (pf.underline !== null) base.underline = pf.underline;
-          if (pf.color !== null)     base.color = pf.color;
+        // المرحلة 2: الاستبدال من آخر فقرة لأولها، ومن آخر موضع لأوله
+        // حتى لا يُزيح أي تعديلٍ مواقعَ المواضع التي لم تُعالَج بعد
+        for (let pi = paras.items.length - 1; pi >= 0; pi--){
+          const info = plan[pi];
+          if (!info) continue;
+          const { orig, byText, searches } = info;
 
-          let first = true;
-          for (const s of segs){
-            let ins;
-            if (first){ ins = para.getRange().insertText(s.text, Word.InsertLocation.replace); first = false; }
-            else      { ins = para.insertText(s.text, Word.InsertLocation.end); }
-
-            if (s.symbol){
-              // الرمز: نمط حروف الأنوار، وعادي دائماً (نزع البولد والمائل)
-              ins.style = STYLE_NAME;
-              ins.font.bold = false;
-              ins.font.italic = false;
-            } else {
-              // النص العادي: يحتفظ بخط الفقرة الأصلي كما هو دون تغيير
-              if (Object.keys(base).length) ins.font.set(base);
+          const targets = [];
+          for (const mt of Object.keys(byText)){
+            // كل المواضع الحرفية للنص في الفقرة الأصلية
+            const allPos = [];
+            let idx = orig.indexOf(mt);
+            while (idx !== -1){ allPos.push(idx); idx = orig.indexOf(mt, idx + 1); }
+            const res = searches[mt];
+            for (const sp of byText[mt]){
+              const occ = allPos.indexOf(sp.start);
+              if (occ >= 0 && occ < res.items.length){
+                targets.push({ range: res.items[occ], symbol: sp.symbol, start: sp.start });
+              }
             }
           }
-          changed++;
+          targets.sort((a, b) => b.start - a.start); // من آخر موضع لأوله
+
+          for (const t of targets){
+            const ins = t.range.insertText(t.symbol, Word.InsertLocation.replace);
+            ins.style = STYLE_NAME;     // نمط حروف الأنوار (الخط)
+            ins.font.bold = false;      // الرمز عادي دائماً
+            ins.font.italic = false;
+            changed++;
+          }
         }
         await ctx.sync();
       });
 
-      setStatus("ok", changed ? `تم التنفيذ بنجاح — عُولجت ${changed} فقرة.` : "تم — لم يُعثر على عبارات للاستبدال.");
+      setStatus("ok", changed ? `تم التنفيذ بنجاح — استُبدِل ${changed} رمزاً.` : "تم — لم يُعثر على عبارات للاستبدال.");
     } catch (err){
       setStatus("err", "تعذّر التنفيذ: " + (err.message || err));
     }
