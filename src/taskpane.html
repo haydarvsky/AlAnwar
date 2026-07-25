@@ -8,7 +8,6 @@
   <!-- Office JavaScript API -->
   <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
 
-  <!-- خط عربي مناسب للطباعة (مع بدائل نظامية عند انقطاع الإنترنت) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
@@ -23,7 +22,11 @@
       --gold:     #b8860b;
       --gold-dk:  #8c6608;
       --green:    #1f6f5c;
+      --green-bg: #ecf5f1;
       --danger:   #9b3b2f;
+      --danger-bg:#f8ecea;
+      --warn:     #8a6d1f;
+      --warn-bg:  #fbf4e2;
       --shadow:   0 1px 2px rgba(43,33,24,.06), 0 4px 18px rgba(43,33,24,.08);
     }
 
@@ -33,17 +36,16 @@
       margin: 0; padding: 0;
       background: var(--parch);
       color: var(--ink);
-      font-family: "Tajawal", "Segoe UI", "Tahoma", sans-serif;
+      font-family: "Sakkal Saad", "Tajawal", "Segoe UI", "Tahoma", sans-serif;
       font-size: 14px;
       -webkit-font-smoothing: antialiased;
     }
 
-    .wrap { padding: 16px 16px 22px; max-width: 460px; margin: 0 auto; }
+    .wrap { padding: 14px 14px 22px; max-width: 480px; margin: 0 auto; }
 
-    /* العنوان */
     header {
       display: flex; align-items: center; gap: 12px;
-      padding-bottom: 14px; margin-bottom: 16px;
+      padding-bottom: 12px; margin-bottom: 12px;
       border-bottom: 1px solid var(--line);
     }
     .mark {
@@ -55,107 +57,148 @@
       color: var(--gold-dk); font-size: 20px;
     }
     h1 {
-      font-family: "Amiri", "Tajawal", serif;
-      font-size: 22px; font-weight: 700;
-      margin: 0; line-height: 1.2;
+      font-family: "Amiri", "Sakkal Saad", "Tajawal", serif;
+      font-size: 22px; font-weight: 700; margin: 0; line-height: 1.2;
     }
-    header .sub { font-size: 12px; color: var(--ink-soft); margin-top: 2px; }
+    header .sub { font-size: 11.5px; color: var(--ink-soft); margin-top: 3px; }
 
     .card {
-      background: #fff;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 14px;
-      margin-bottom: 14px;
-      box-shadow: var(--shadow);
+      background: #fff; border: 1px solid var(--line); border-radius: 12px;
+      padding: 12px; margin-bottom: 11px; box-shadow: var(--shadow);
     }
     .card > .label {
-      font-weight: 700; font-size: 13px;
-      color: var(--ink); margin-bottom: 10px;
+      font-weight: 700; font-size: 13px; margin-bottom: 9px;
       display: flex; align-items: center; gap: 7px;
     }
     .label .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); }
 
-    /* خيارات النطاق */
+    /* حالة الخط */
+    .state {
+      border-radius: 10px; padding: 10px 12px; font-size: 12.5px;
+      line-height: 1.6; margin-bottom: 11px; border: 1px solid;
+    }
+    .state.ok  { background: var(--green-bg);  color: var(--green);  border-color: #cfe7df; }
+    .state.bad { background: var(--danger-bg); color: var(--danger); border-color: #efd6d1; }
+
+    #fontOverrideRow {
+      display: none; align-items: center; gap: 7px;
+      margin: -4px 0 11px; padding: 0 4px;
+      font-size: 12px; color: var(--danger);
+    }
+
+    /* أزرار النطاق */
     .seg { display: flex; gap: 8px; }
     .seg label {
       flex: 1; cursor: pointer; text-align: center;
-      padding: 9px 6px; border-radius: 9px;
+      padding: 8px 6px; border-radius: 9px;
       border: 1px solid var(--line); background: var(--parch);
-      font-size: 13px; transition: .15s;
-      user-select: none;
+      font-size: 13px; transition: .15s; user-select: none;
     }
     .seg input { display: none; }
-    .seg input:checked + span { font-weight: 700; }
     .seg label:has(input:checked) {
       border-color: var(--gold); background: #fffaf0;
-      box-shadow: inset 0 0 0 1px var(--gold);
-      color: var(--gold-dk);
+      box-shadow: inset 0 0 0 1px var(--gold); color: var(--gold-dk);
+      font-weight: 700;
     }
 
-    /* قائمة المسافة */
+    /* مربعات الاختيار */
+    .checks { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px; }
+    .chk {
+      display: flex; align-items: center; gap: 7px;
+      font-size: 12.5px; cursor: pointer;
+    }
+    .chk input { accent-color: var(--gold-dk); width: 15px; height: 15px; }
+    .chk input:disabled + span { opacity: .5; }
+
     select {
-      width: 100%; padding: 10px 12px;
+      width: 100%; padding: 9px 12px;
       border: 1px solid var(--line); border-radius: 9px;
       background: var(--parch); color: var(--ink);
       font-family: inherit; font-size: 13px;
       appearance: none; cursor: pointer;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%238c6608' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: left 12px center;
+      background-repeat: no-repeat; background-position: left 12px center;
     }
-    .hint { font-size: 11.5px; color: var(--ink-soft); margin-top: 8px; line-height: 1.5; }
+    .fieldrow { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .fieldrow label { flex: none; width: 62px; font-size: 12.5px; color: var(--ink-soft); }
+    .hint { font-size: 11.5px; color: var(--ink-soft); margin-top: 7px; line-height: 1.55; }
 
-    /* لوحة المعلومات */
-    .info-row {
-      display: flex; justify-content: space-between;
-      padding: 5px 0; font-size: 12.5px;
+    .linkbtn {
+      background: none; border: none; padding: 4px 0;
+      color: var(--gold-dk); font-family: inherit; font-size: 12px;
+      cursor: pointer; text-decoration: underline; flex: none;
     }
-    .info-row span:first-child { color: var(--ink-soft); }
-    .info-row span:last-child { font-weight: 700; }
+    .linkbtn:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* المطويّات */
+    .foldable .foldhead {
+      display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer; user-select: none;
+    }
+    .foldable .foldhead::after {
+      content: "▾"; color: var(--gold-dk); font-size: 12px;
+      transition: transform .15s;
+    }
+    .foldable.open .foldhead::after { transform: rotate(180deg); }
+    .foldable .foldbody { display: none; padding-top: 10px; }
+    .foldable.open .foldbody { display: block; }
+
+    /* جدول العبارات */
+    table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    td { padding: 6px 4px; border-bottom: 1px solid var(--parch-2); vertical-align: top; }
+    td.glyph {
+      width: 42px; text-align: center;
+      font-family: "AlAnwarLetters", monospace;
+      font-size: 22px; color: var(--gold-dk); line-height: 1.1;
+    }
+    .tiny { font-size: 11px; color: var(--ink-soft); margin-top: 2px; }
 
     /* الأزرار */
-    .actions { display: flex; gap: 10px; margin-top: 4px; }
-    button {
-      flex: 1; cursor: pointer;
-      padding: 12px 10px; border-radius: 10px;
+    .actions { display: flex; gap: 10px; margin-top: 2px; }
+    button.main {
+      flex: 1; cursor: pointer; padding: 12px 10px; border-radius: 10px;
       font-family: inherit; font-size: 14px; font-weight: 700;
       border: 1px solid transparent; transition: .15s;
     }
-    button:disabled { opacity: .5; cursor: not-allowed; }
-    .btn-run {
-      background: var(--gold); color: #fff;
-      box-shadow: 0 2px 8px rgba(184,134,11,.35);
-    }
+    button.main:disabled { opacity: .5; cursor: not-allowed; }
+    .btn-run { background: var(--gold); color: #fff; box-shadow: 0 2px 8px rgba(184,134,11,.35); }
     .btn-run:hover:not(:disabled) { background: var(--gold-dk); }
-    .btn-rev {
-      background: var(--parch); color: var(--ink);
-      border-color: var(--line);
-    }
+    .btn-rev { background: var(--parch); color: var(--ink); border-color: var(--line); }
     .btn-rev:hover:not(:disabled) { border-color: var(--ink-soft); }
 
-    /* الحالة */
-    #status {
-      margin-top: 14px; padding: 11px 13px;
-      border-radius: 9px; font-size: 13px;
-      display: none; line-height: 1.5;
-    }
-    #status.ok    { display: block; background: #ecf5f1; color: var(--green); border: 1px solid #cfe7df; }
-    #status.err   { display: block; background: #f8ecea; color: var(--danger); border: 1px solid #efd6d1; }
-    #status.work  { display: block; background: var(--parch-2); color: var(--ink-soft); border: 1px solid var(--line); }
+    /* التقدم */
+    #progress { display: none; margin-top: 12px; }
+    #progressText { font-size: 12px; color: var(--ink-soft); margin-bottom: 5px; }
+    .track { height: 5px; background: var(--parch-2); border-radius: 4px; overflow: hidden; }
+    #progressBar { display: block; height: 100%; width: 0; background: var(--gold); transition: width .2s; }
 
-    footer {
-      text-align: center; margin-top: 20px;
-      font-size: 11.5px; color: var(--ink-soft);
+    /* الحالة والتقرير */
+    #status {
+      margin-top: 12px; padding: 11px 13px; border-radius: 10px;
+      font-size: 13px; display: none; line-height: 1.6; border: 1px solid;
     }
-    footer .update { margin-top: 3px; font-size: 10.5px; opacity: .8; }
-    .spinner {
-      display: inline-block; width: 13px; height: 13px;
-      border: 2px solid var(--line); border-top-color: var(--gold);
-      border-radius: 50%; animation: spin .7s linear infinite;
-      vertical-align: -2px; margin-left: 6px;
+    #status.ok   { display: block; background: var(--green-bg);  color: var(--green);  border-color: #cfe7df; }
+    #status.err  { display: block; background: var(--danger-bg); color: var(--danger); border-color: #efd6d1; }
+    #status.warn { display: block; background: var(--warn-bg);   color: var(--warn);   border-color: #eddfb9; }
+    #status.work { display: block; background: var(--parch-2);   color: var(--ink-soft); border-color: var(--line); }
+    .rrow {
+      display: flex; justify-content: space-between; gap: 10px;
+      padding: 3px 0; font-size: 12.5px;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .rrow i { font-style: normal; opacity: .75; font-size: 11px; }
+    .detail { margin-top: 7px; }
+    .detail summary { cursor: pointer; font-size: 12px; opacity: .85; }
+    .dlist { padding: 4px 8px 0; }
+    .note { font-size: 11.5px; opacity: .9; padding: 3px 0; line-height: 1.55; }
+
+    .warnbox {
+      margin-top: 12px; font-size: 11.5px; line-height: 1.6;
+      color: var(--warn); background: var(--warn-bg);
+      border: 1px solid #eddfb9; border-radius: 10px; padding: 9px 11px;
+    }
+
+    footer { text-align: center; margin-top: 18px; font-size: 11px; color: var(--ink-soft); }
+    footer div { margin-top: 3px; }
   </style>
 </head>
 <body>
@@ -164,9 +207,15 @@
       <div class="mark">✦</div>
       <div>
         <h1>حروف الأنوار</h1>
-        <div class="sub">استبدال العبارات الشرعية بحروف زخرفية</div>
+        <div class="sub" id="version">جارٍ التحميل…</div>
       </div>
     </header>
+
+    <div id="fontState" class="state">جارٍ فحص الخط…</div>
+    <div id="fontOverrideRow">
+      <input type="checkbox" id="cbFontOverride">
+      <label for="cbFontOverride">أعرف ذلك — نفّذ التحويل رغم غياب الخط.</label>
+    </div>
 
     <div class="card">
       <div class="label"><span class="dot"></span> النطاق</div>
@@ -174,399 +223,129 @@
         <label><input type="radio" name="scope" value="selection"><span>التحديد</span></label>
         <label><input type="radio" name="scope" value="document" checked><span>المستند كامل</span></label>
       </div>
+      <div class="hint">«التحديد» يعالج كل فقرة يشملها التحديد ولو جزئياً.</div>
     </div>
 
     <div class="card">
-      <div class="label"><span class="dot"></span> النمط المطبَّق</div>
-      <div class="info-row"><span>النمط الحرفي</span><span>حروف الأنوار</span></div>
-      <div class="info-row"><span>الخط</span><span>AlAnwarLetters</span></div>
+      <div class="label"><span class="dot"></span> ما يُضمَّن في البحث</div>
+      <div class="checks">
+        <label class="chk"><input type="checkbox" id="cbFootnotes" checked><span>الحواشي السفلية</span></label>
+        <label class="chk"><input type="checkbox" id="cbEndnotes" checked><span>التعليقات الختامية</span></label>
+        <label class="chk"><input type="checkbox" id="cbHeaders"><span>الرؤوس والتذييلات</span></label>
+        <label class="chk"><input type="checkbox" id="cbShapes"><span>مربعات النص</span></label>
+      </div>
+      <div class="hint">متن المستند وجداولُه مشمولة دائماً. <span id="shapesHint"></span></div>
+    </div>
+
+    <div class="card" id="styleRow">
+      <div class="label"><span class="dot"></span> أنماط الفقرات</div>
+      <div class="fieldrow">
+        <label for="selInclude">تطبيق في</label>
+        <select id="selInclude"><option value="">كل أنماط الفقرات</option></select>
+      </div>
+      <div class="fieldrow">
+        <label for="selExclude">استثناء</label>
+        <select id="selExclude"><option value="">بدون استثناء</option></select>
+      </div>
+      <button id="btnStyles" class="linkbtn">تحديث قائمة الأنماط</button>
+    </div>
+
+    <div class="card">
+      <div class="label"><span class="dot"></span> المسافة السابقة للرمز</div>
+      <select id="selSpace"></select>
+      <div class="hint" id="spaceHint"></div>
+    </div>
+
+    <div class="card foldable">
+      <div class="foldhead">
+        <div class="label" style="margin:0"><span class="dot"></span> خيارات دقيقة</div>
+      </div>
+      <div class="foldbody">
+        <label class="chk" style="margin-bottom:9px">
+          <input type="checkbox" id="cbDashes" checked>
+          <span>حذف الشرطتين المحيطتين بالعبارة</span>
+        </label>
+        <div class="hint" style="margin:0 0 12px">
+          «الشيخ - قدس سره - كتب» ← «الشيخ ⟨رمز⟩ كتب». وتُشترط الشرطتان معاً؛
+          والمفردة تُصان لأنها غالباً فاتحة اعتراض أو علامة تعداد.
+        </div>
+        <label class="chk">
+          <input type="checkbox" id="cbContext" checked>
+          <span>الاحتراز السياقي</span>
+        </label>
+        <div class="hint" style="margin-top:7px">
+          يمنع التحويل حين تكون العبارة جملةً عادية: «ردّ عليه السلام»،
+          «ما دام ظله ممتداً»، «إذا عز وجل الأمر». لا تُطفئه إلا لغرض.
+        </div>
+      </div>
+    </div>
+
+    <div class="card foldable">
+      <div class="foldhead">
+        <div class="label" style="margin:0">
+          <span class="dot"></span> جدول العبارات (<span id="phraseCount">0</span>)
+        </div>
+      </div>
+      <div class="foldbody">
+        <table><tbody id="phraseTable"></tbody></table>
+        <div class="hint">
+          تظهر الرموز بصورتها الصحيحة هنا إن كان الخط مثبَّتاً.
+          رمز واحد لعبارة واحدة، والاسترجاع يعيد الصيغة المعتمدة.
+        </div>
+      </div>
     </div>
 
     <div class="actions">
-      <button id="btnRun" class="btn-run" disabled>تنفيذ</button>
-      <button id="btnRev" class="btn-rev" disabled>استرجاع</button>
+      <button id="btnConvert" class="main btn-run">تحويل</button>
+      <button id="btnRestore" class="main btn-rev">استرجاع</button>
+    </div>
+
+    <div id="progress">
+      <div id="progressText"></div>
+      <div class="track"><span id="progressBar"></span></div>
     </div>
 
     <div id="status"></div>
 
+    <div class="warnbox">
+      لا تراجع بضغطة واحدة في Word كما في InDesign. احفظ نسخة من المستند
+      قبل التحويل، أو اعمل على نسخة، فالتراجع عن عملية كبيرة قد يحتاج
+      ضغطات متتابعة.
+    </div>
+
     <footer>
-      <div>تطوير حيدر المعاتيق © 2026</div>
-      <div class="update">آخر تحديث: 6 يونيو 2026</div>
+      تطوير حيدر المعاتيق © 2026
+      <div>منقولة من سكربت «حروف الأنوار» لأدوبي إنديزاين</div>
     </footer>
   </div>
 
   <script>
-  /* =========================================================
-     حروف الأنوار — منطق Office.js
-     منقول من سكربت InDesign الأصلي مع الحفاظ على القواعد ذاتها
-     ========================================================= */
+    /* حارس التوافق: محرك عرضٍ قديم (IE11 في Word 2016) يعجز عن
+       بناء طبقة Word، فيُخبَر المستخدم بدل أن تبدو اللوحة معطلة. */
+    (function () {
+      var modern = false;
+      try {
+        new Function("return (async function(){})");
+        modern = !!(window.Promise && document.querySelector);
+      } catch (e) { modern = false; }
 
-  const STYLE_NAME = "حروف الأنوار";
-  const FONT_NAME  = "AlAnwarLetters";
-
-  // أحرف خاصة (Private Use Area) للتتبّع الداخلي ولا تظهر في النص العادي
-  const GUARD     = "\uE000";  // حارس الحماية السياقية
-  const SENT_OPEN = "\uE010";  // بداية رمز مُستبدَل
-  const SENT_CLOSE= "\uE011";  // نهاية رمز مُستبدَل
-
-  // فئة التشكيل: الحركات + التطويل
-  const DIAC       = "[\\u064B-\\u0652\\u0640]*";
-  const WORD_START = "(?<![\\u0621-\\u064A])";
-  const MARKS      = "[\\(\\)\\[\\]\\{\\}<>\"'\\-\\u2014]*";
-
-  /* ---------- قائمة الاستبدال (الأطول أولاً) ---------- */
-  const REPLACEMENTS = [
-    { find: "صلى الله عليه وآله وسلم",   replace: "M" },
-    { find: "صلى الله عليه وآله",        replace: "M" },
-    { find: "صلوات الله عليه",           replace: "L" },
-    { find: "عليهم صلوات الله أجمعين",   replace: "h" },
-    { find: "عليهم صلوات الله جميعاً",   replace: "h" },
-    { find: "عليهم صلوات الله",          replace: "h" },
-    { find: "رضوان الله عليهم أجمعين",   replace: "c" },
-    { find: "رضوان الله عليهم جميعاً",   replace: "c" },
-    { find: "رضوان الله عليهم",          replace: "c" },
-    { find: "رضوان الله عليه",           replace: "b" },
-    { find: "سلام الله عليهم أجمعين",    replace: "f" },
-    { find: "سلام الله عليهم جميعاً",    replace: "f" },
-    { find: "سلام الله عليهم",           replace: "f" },
-    { find: "سلامُ اللهِ عليهم أجمعين",  replace: "f" },
-    { find: "سلامُ اللهِ عليهم جميعاً",  replace: "f" },
-    { find: "سلامُ اللهِ عليهم",         replace: "f" },
-    { find: "سلام الله عليها",           replace: "e" },
-    { find: "سلامُ اللهِ عليها",         replace: "e" },
-    { find: "سلام الله عليه",            replace: "d" },
-    { find: "سلامُ اللهِ عليه",          replace: "d" },
-    { find: "عجل الله فرجه الشريف",      replace: "N" },
-    { find: "عجل الله فرجه",             replace: "N" },
-    { find: "عليهما السلام",             replace: "V" },
-    { find: "عليهم السلام أجمعين",       replace: "W" },
-    { find: "عليهم السلام جميعاً",       replace: "W" },
-    { find: "عليهم السلام",              replace: "W" },
-    { find: "عليهن السلام",              replace: "X" },
-    { find: "عليها السلام",              replace: "U" },
-    { find: "عليه السلام",               replace: "T" },
-    { find: "قدس الله سرهم أجمعين",      replace: "P" },
-    { find: "قدس الله سرهم جميعاً",      replace: "P" },
-    { find: "قدس الله سرهم",             replace: "P" },
-    { find: "قدس سرهم أجمعين",           replace: "P" },
-    { find: "قدس سرهم جميعاً",           replace: "P" },
-    { find: "قدس سرهم",                  replace: "P" },
-    { find: "قدس سرهما",                 replace: "Q" },
-    { find: "قدس سره الشريف",            replace: "P" },
-    { find: "قدس سره",                   replace: "P" },
-    { find: "حفظهم الله أجمعين",         replace: "K" },
-    { find: "حفظهم الله جميعاً",         replace: "K" },
-    { find: "حفظهم الله",                replace: "K" },
-    { find: "حفظه الله",                 replace: "J" },
-    { find: "رحمهم الله أجمعين",         replace: "I" },
-    { find: "رحمهم الله جميعاً",         replace: "I" },
-    { find: "رحمهم الله",                replace: "I" },
-    { find: "رحمها الله",                replace: "H" },
-    { find: "رحمه الله",                 replace: "G" },
-    { find: "دام ظلهما الشريف",          replace: "Z" },
-    { find: "دام ظلهما",                 replace: "Z" },
-    { find: "دام ظلهم الشريف",           replace: "a" },
-    { find: "دام ظلهم",                  replace: "a" },
-    { find: "دام ظله الشريف",            replace: "Y" },
-    { find: "دام ظله",                   replace: "Y" },
-    { find: "سبحانه وتعالى",             replace: "O" },
-    { find: "تبارك وتعالى",              replace: "O" },
-    { find: "عز وجل",                    replace: "O" }
-  ];
-
-  /* ---------- خريطة العكس (رمز → عبارة افتراضية) ---------- */
-  const REVERSE_MAP = [
-    { symbol: "M", phrase: "صلى الله عليه وآله وسلم" },
-    { symbol: "L", phrase: "صلوات الله عليه" },
-    { symbol: "h", phrase: "عليهم صلوات الله" },
-    { symbol: "c", phrase: "رضوان الله عليهم" },
-    { symbol: "b", phrase: "رضوان الله عليه" },
-    { symbol: "f", phrase: "سلام الله عليهم" },
-    { symbol: "e", phrase: "سلام الله عليها" },
-    { symbol: "d", phrase: "سلام الله عليه" },
-    { symbol: "N", phrase: "عجل الله فرجه الشريف" },
-    { symbol: "V", phrase: "عليهما السلام" },
-    { symbol: "W", phrase: "عليهم السلام" },
-    { symbol: "X", phrase: "عليهن السلام" },
-    { symbol: "U", phrase: "عليها السلام" },
-    { symbol: "T", phrase: "عليه السلام" },
-    { symbol: "P", phrase: "قدس سره" },
-    { symbol: "Q", phrase: "قدس سرهما" },
-    { symbol: "K", phrase: "حفظهم الله" },
-    { symbol: "J", phrase: "حفظه الله" },
-    { symbol: "I", phrase: "رحمهم الله" },
-    { symbol: "H", phrase: "رحمها الله" },
-    { symbol: "G", phrase: "رحمه الله" },
-    { symbol: "Z", phrase: "دام ظلهما" },
-    { symbol: "a", phrase: "دام ظلهم" },
-    { symbol: "Y", phrase: "دام ظله" },
-    { symbol: "O", phrase: "عز وجل" }
-  ];
-
-  /* ---------- قوائم الحماية السياقية ---------- */
-  const SALAM_VERBS = ["رد","ردت","ردوا","أرد","نرد","نردد","يرد","ترد","يردون","تردين","اردد",
-    "ألقى","ألقت","ألقوا","ألقين","يلقي","تلقي","نلقي","ألق","ألقي","يلقون","تلقون","ألقاه","ألقاها","ألقاهم",
-    "أفشى","أفشت","أفشوا","يفشي","تفشي","أفش","يفشون","تفشين",
-    "بلغ","أبلغ","بلغت","بلغوا","أبلغوا","يبلغ","تبلغ","بلغه","بلغها","بلغهم",
-    "قرأ","قرأت","قرأوا","اقرأ","اقرأوا","يقرأ","تقرأ","أقرئ","اقرئ","أقرأ",
-    "نشر","نشرت","نشروا","انشر","انشروا","ينشر","تنشر",
-    "سلم","سلمت","سلموا","يسلم","تسلم"];
-  const SHART_WORDS  = ["إن","إذا","لو","كلما","حتى","لئن","متى","لولا","لما","كيفما","أينما","حيثما"];
-  const NAFI_IKHBAR  = ["لا","ما","ألا","قد","لقد","فقد","من","ممن","هل","كيف"];
-  const ATF_WORDS    = ["ثم","بل","أو","لكن"];
-  const DAWAM_WORDS  = ["ما","طالما","مذ","منذ","كلما"];
-  const IZZ_BLOCK    = ["إذا","لو","كلما","حتى","حين","حينما","عندما","متى"];
-
-  const PROTECTION_RULES = [
-    { prefix: SALAM_VERBS, middle: ["عليه","عليها","عليهم","عليهما","عليهن"], suffix: ["السلام"] },
-    { prefix: SHART_WORDS, middle: ["رحمه","رحمها","رحمهم"], suffix: ["الله"] },
-    { prefix: NAFI_IKHBAR, middle: ["رحمه","رحمها","رحمهم"], suffix: ["الله"] },
-    { prefix: ATF_WORDS,   middle: ["رحمه","رحمها","رحمهم"], suffix: ["الله"] },
-    { prefix: SHART_WORDS, middle: ["حفظه","حفظهم"],          suffix: ["الله"] },
-    { prefix: DAWAM_WORDS, middle: ["دام"],                   suffix: ["ظله","ظلهما","ظلهم"] },
-    { prefix: IZZ_BLOCK,   middle: ["عز","سبحانه","تبارك"],   suffix: ["وجل","وتعالى"] }
-  ];
-
-  /* ---------- أدوات بناء التعابير النمطية ---------- */
-  function escapeRe(ch){ return ch.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
-
-  function buildArabicGrep(word){
-    let out = "";
-    for (const ch of word){
-      if (ch === " ") out += "\\s+";
-      else out += escapeRe(ch) + DIAC;
-    }
-    return out;
-  }
-
-  function buildSinglePattern(word){
-    let out = "";
-    for (const ch of word){
-      if (/[\u064B-\u0652\u0640]/.test(ch)) continue;
-      if (ch === " ") out += "\\s+";
-      else out += escapeRe(ch) + DIAC;
-    }
-    return out;
-  }
-
-  function buildOr(list){ return list.map(buildSinglePattern).join("|"); }
-
-  /* ---------- حساب مواضع الاستبدال (استبدال في الموضع) ----------
-     يُرجِع قائمة مواضع غير متداخلة {start, end, matchText, symbol}
-     مرتّبة تصاعدياً، مع مراعاة الحماية السياقية و«الأطول أولاً».
-     الفكرة: لا نعيد بناء الفقرة، بل نستبدل الرمز في موضعه فقط،
-     فيبقى باقي النص (بما فيه البولد) بتنسيقه الأصلي دون أي لمس. */
-  function computeSpans(text){
-    // المناطق المحميّة (لا يُستبدل ما يقع داخلها)
-    const protectedZones = [];
-    for (const rule of PROTECTION_RULES){
-      const pat = WORD_START
-                + "(" + buildOr(rule.prefix) + ")"
-                + "(\\s+(?:" + buildOr(rule.middle) + "))"
-                + "(\\s+(?:" + buildOr(rule.suffix) + "))";
-      const re = new RegExp(pat, "g");
-      let m;
-      while ((m = re.exec(text)) !== null){
-        protectedZones.push([m.index, re.lastIndex]);
-        if (re.lastIndex === m.index) re.lastIndex++;
+      if (!modern) {
+        var box = document.getElementById("status");
+        box.className = "err";
+        box.innerHTML = "هذا الإصدار من Word يستعمل محرك عرض قديم لا " +
+          "تعمل عليه الإضافة. استعمل Word 365 الحديث، أو Word للويب.";
+        document.getElementById("btnConvert").disabled = true;
+        document.getElementById("btnRestore").disabled = true;
+      } else {
+        var add = function (src) {
+          var s = document.createElement("script");
+          s.src = src; s.async = false;
+          document.head.appendChild(s);
+        };
+        add("core.js");
+        add("word.js");
       }
-    }
-    function inProtected(s, e){
-      for (const z of protectedZones){ if (s < z[1] && e > z[0]) return true; }
-      return false;
-    }
-
-    const claimed = [];
-    const spans = [];
-    function overlapsClaimed(s, e){
-      for (const c of claimed){ if (s < c[1] && e > c[0]) return true; }
-      return false;
-    }
-
-    // الأطول أولاً (REPLACEMENTS مرتّبة كذلك)
-    for (const p of REPLACEMENTS){
-      const core = "(?<!\\w)" + buildArabicGrep(p.find) + "(?!\\w)";
-      const re = new RegExp(MARKS + core + MARKS, "g");
-      let m;
-      while ((m = re.exec(text)) !== null){
-        const s = m.index, e = m.index + m[0].length;
-        if (e <= s){ re.lastIndex++; continue; }
-        if (!overlapsClaimed(s, e) && !inProtected(s, e)){
-          claimed.push([s, e]);
-          spans.push({ start: s, end: e, matchText: m[0], symbol: p.replace });
-        }
-        if (re.lastIndex === m.index) re.lastIndex++;
-      }
-    }
-    spans.sort((a, b) => a.start - b.start);
-    return spans;
-  }
-
-  /* ---------- إنشاء النمط الحرفي (مرة واحدة) ---------- */
-  async function ensureStyle(){
-    try {
-      await Word.run(async (ctx) => {
-        const st = ctx.document.addStyle(STYLE_NAME, Word.StyleType.character);
-        st.font.name = FONT_NAME;
-        st.font.bold = false;     // الرموز دائماً عادية (بلا بولد)
-        st.font.italic = false;   // وبلا مائل
-        await ctx.sync();
-      });
-    } catch (e) {
-      // النمط موجود مسبقاً — لا حاجة لفعل شيء
-    }
-  }
-
-  function useSelection(){
-    return document.querySelector('input[name="scope"]:checked').value === "selection";
-  }
-
-  /* ---------- زر التنفيذ (استبدال في الموضع) ---------- */
-  async function runForward(){
-    const onSel = useSelection();
-    setStatus("work", "جارٍ التنفيذ");
-
-    try {
-      await ensureStyle();
-
-      let changed = 0;
-      await Word.run(async (ctx) => {
-        const scope = onSel ? ctx.document.getSelection() : ctx.document.body;
-        const paras = scope.paragraphs;
-        paras.load("items");
-        await ctx.sync();
-        paras.items.forEach(p => p.load("text"));
-        await ctx.sync();
-
-        // المرحلة 1: لكل فقرة، احسب المواضع وابحث عن نصوصها (قبل أي تعديل)
-        const plan = [];
-        for (const para of paras.items){
-          const orig = para.text;
-          if (!orig){ plan.push(null); continue; }
-          const spans = computeSpans(orig);
-          if (!spans.length){ plan.push(null); continue; }
-
-          // اجمع المواضع حسب النص المطابَق، وابحث عن كل نص مميّز داخل الفقرة
-          const byText = {};
-          for (const sp of spans){
-            (byText[sp.matchText] = byText[sp.matchText] || []).push(sp);
-          }
-          const searches = {};
-          const pr = para.getRange();
-          for (const mt of Object.keys(byText)){
-            const res = pr.search(mt, { matchCase: true });
-            res.load("items");
-            searches[mt] = res;
-          }
-          plan.push({ orig, byText, searches });
-        }
-        await ctx.sync();
-
-        // المرحلة 2: الاستبدال من آخر فقرة لأولها، ومن آخر موضع لأوله
-        // حتى لا يُزيح أي تعديلٍ مواقعَ المواضع التي لم تُعالَج بعد
-        for (let pi = paras.items.length - 1; pi >= 0; pi--){
-          const info = plan[pi];
-          if (!info) continue;
-          const { orig, byText, searches } = info;
-
-          const targets = [];
-          for (const mt of Object.keys(byText)){
-            // كل المواضع الحرفية للنص في الفقرة الأصلية
-            const allPos = [];
-            let idx = orig.indexOf(mt);
-            while (idx !== -1){ allPos.push(idx); idx = orig.indexOf(mt, idx + 1); }
-            const res = searches[mt];
-            for (const sp of byText[mt]){
-              const occ = allPos.indexOf(sp.start);
-              if (occ >= 0 && occ < res.items.length){
-                targets.push({ range: res.items[occ], symbol: sp.symbol, start: sp.start });
-              }
-            }
-          }
-          targets.sort((a, b) => b.start - a.start); // من آخر موضع لأوله
-
-          for (const t of targets){
-            const ins = t.range.insertText(t.symbol, Word.InsertLocation.replace);
-            ins.style = STYLE_NAME;     // نمط حروف الأنوار (الخط)
-            ins.font.bold = false;      // الرمز عادي دائماً
-            ins.font.italic = false;
-            changed++;
-          }
-        }
-        await ctx.sync();
-      });
-
-      setStatus("ok", changed ? `تم التنفيذ بنجاح — استُبدِل ${changed} رمزاً.` : "تم — لم يُعثر على عبارات للاستبدال.");
-    } catch (err){
-      setStatus("err", "تعذّر التنفيذ: " + (err.message || err));
-    }
-  }
-
-  /* ---------- زر الاسترجاع ---------- */
-  async function runReverse(){
-    const onSel = useSelection();
-    setStatus("work", "جارٍ الاسترجاع");
-
-    try {
-      let restored = 0;
-      await Word.run(async (ctx) => {
-        const scope = onSel ? ctx.document.getSelection() : ctx.document.body;
-
-        for (const entry of REVERSE_MAP){
-          const results = scope.search(entry.symbol, { matchCase: true });
-          results.load("items");
-          await ctx.sync();
-
-          // حمّل خط كل نتيجة، وخط فقرتها لإعادة التنسيق الأصلي
-          const items = results.items.map(r => {
-            r.font.load("name");
-            const p = r.paragraphs.getFirst();
-            p.font.load("bold, italic");
-            return { r, p };
-          });
-          await ctx.sync();
-
-          // المعالجة من الأخير إلى الأول: استبدال رمزٍ لا يُزيح مواقع
-          // الرموز التي قبله، فتبقى مراجعها صالحة حتى نهاية المستند
-          for (let i = items.length - 1; i >= 0; i--){
-            const it = items[i];
-            if (it.r.font.name === FONT_NAME){
-              const ins = it.r.insertText(entry.phrase, Word.InsertLocation.replace);
-              ins.style = "Default Paragraph Font"; // إزالة النمط الحرفي (يعيد الخط)
-              // إعادة بولد/مائل الفقرة للنص المُسترجَع (في الفقرات المتجانسة)
-              if (it.p.font.bold !== null)   ins.font.bold = it.p.font.bold;
-              if (it.p.font.italic !== null) ins.font.italic = it.p.font.italic;
-              restored++;
-            }
-          }
-          await ctx.sync();
-        }
-      });
-
-      setStatus("ok", restored ? `تم الاسترجاع بنجاح — أُعيدت ${restored} عبارة.` : "لا يوجد ما يُسترجع في هذا النطاق.");
-    } catch (err){
-      setStatus("err", "تعذّر الاسترجاع: " + (err.message || err));
-    }
-  }
-
-  /* ---------- الحالة ---------- */
-  function setStatus(kind, msg){
-    const el = document.getElementById("status");
-    el.className = kind;
-    el.innerHTML = (kind === "work") ? (msg + '<span class="spinner"></span>') : msg;
-  }
-
-  /* ---------- التهيئة ---------- */
-  Office.onReady((info) => {
-    if (info.host === Office.HostType.Word){
-      document.getElementById("btnRun").disabled = false;
-      document.getElementById("btnRev").disabled = false;
-      document.getElementById("btnRun").onclick = runForward;
-      document.getElementById("btnRev").onclick = runReverse;
-    } else {
-      setStatus("err", "هذه الإضافة تعمل داخل Microsoft Word فقط.");
-    }
-  });
+    })();
   </script>
 </body>
 </html>
